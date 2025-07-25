@@ -1,0 +1,27 @@
+[package]
+name = "bank_account"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+anyhow = "1.0.98"
+tokio = { version = "1.47.0", features = ["full"] }
+wash = { git = "https://github.com/cosmonic-labs/wash", version = "0.50.1" }
+prost = "0.13"
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dev-dependencies]
+anyhow = "1.0.98"
+tokio = { version = "1.47.0", features = ["full"] }
+wac-graph = "0.7.0"
+wash = { git = "https://github.com/cosmonic-labs/wash", version = "0.50.1" }
+wasmtime = "31.0.0"
+prost = "0.13"
+reqwest = { version = "0.12", features = ["json"] }
+
+[build-dependencies]
+prost-build = "0.13"

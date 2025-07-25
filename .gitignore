@@ -1,0 +1,6 @@
+/target
+bank_account/target
+node_modules
+*.wasm
+eshop_aggregate/
+bank_account/bank_store

@@ -1,0 +1,41 @@
+// bank.proto
+syntax = "proto3";
+package banking;
+
+message AccountOpened {
+  string id = 1;
+  uint32 balance = 2;
+}
+
+message Transaction {
+  int64 amount = 1;
+}
+
+message TransactionDenied {
+  int64 amount = 1;
+}
+
+message BankEvent {
+  oneof event {
+    AccountOpened opened = 1;
+    Transaction transaction = 2;
+    TransactionDenied denied = 3;
+  }
+}
+
+message BankCommand {
+  oneof command {
+    uint32 open_account = 1;
+    int64 transaction = 2;
+  }
+}
+
+message BankState {
+  string id = 1;
+  int64 balance = 2;
+  bool is_open = 3;
+}
+
+message EventList {
+  repeated BankEvent events = 1;
+}

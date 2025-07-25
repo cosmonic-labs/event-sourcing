@@ -1,0 +1,15 @@
+[package]
+name = "event-sourcer"
+description = "A component implementation of an event sourced system"
+edition = "2021"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = { workspace = true }
+wit-bindgen = { workspace = true }
+wasi = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

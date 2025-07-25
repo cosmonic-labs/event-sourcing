@@ -1,0 +1,16 @@
+[package]
+name = "filesystem-event-store"
+description = "A component implementing an event store with wasi:filesystem"
+edition = "2021"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = { workspace = true }
+wit-bindgen = { workspace = true }
+wasi = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { version = "1.17.0", features = ["v6"], default-features = false }
