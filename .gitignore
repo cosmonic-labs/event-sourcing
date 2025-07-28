@@ -2,5 +2,5 @@
 bank_account/target
 node_modules
 *.wasm
-eshop_aggregate/
+eshop_command_handler/
 bank_account/bank_store

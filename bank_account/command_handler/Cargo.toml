@@ -1,6 +1,6 @@
 [package]
-name = "bank-account-aggregate"
-description = "An example bank account aggregate with Cosmonic event sourcing"
+name = "bank-account-command-handler"
+description = "An example bank account command handler with Cosmonic event sourcing"
 edition = "2021"
 version = "0.1.0"
 

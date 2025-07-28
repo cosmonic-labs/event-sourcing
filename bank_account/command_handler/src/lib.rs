@@ -1,13 +1,13 @@
 /// Generated WIT bindings
 mod bindings {
-    use super::Aggregate;
+    use super::CommandHandler;
 
     wit_bindgen::generate!({
         path: "../../wit",
-        world: "aggregate-w",
+        world: "command-handler-w",
     });
 
-    export!(Aggregate);
+    export!(CommandHandler);
 }
 
 pub mod proto {
@@ -41,20 +41,20 @@ impl From<BankState> for types::State {
     }
 }
 
-pub struct Aggregate;
+pub struct CommandHandler;
 
 use bindings::exports::cosmonic::eventsourcing::*;
 
 impl types::GuestEvent for BankEvent {}
 impl types::GuestCommand for BankCommand {}
 impl types::GuestState for BankState {}
-impl types::Guest for Aggregate {
+impl types::Guest for CommandHandler {
     type Event = BankEvent;
     type Command = BankCommand;
     type State = BankState;
 }
 
-impl aggregate::Guest for Aggregate {
+impl command_handler::Guest for CommandHandler {
     fn rehydrate(events: Vec<types::Event>) -> Result<types::State, String> {
         let mut state = BankState::default();
         for e in events {

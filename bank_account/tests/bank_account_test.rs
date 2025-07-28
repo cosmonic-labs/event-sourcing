@@ -13,9 +13,9 @@ async fn test_bank_account_basic() -> anyhow::Result<()> {
     let cli_context = CliContext::new().await?;
     let config = Config::default();
 
-    let path = PathBuf::from("./aggregate");
-    let _aggregate_res =
-        wash::cli::component_build::build_component(&path, &cli_context, &config).await;
+    let path = PathBuf::from("./command_handler");
+    let _command_handler_res =
+        CommandManifest::from_file(path.join("Cargo.toml"))?.compilation_targets;
 
     let path = PathBuf::from("../event_sourcer");
     let _event_sourcer_res =
@@ -28,7 +28,7 @@ async fn test_bank_account_basic() -> anyhow::Result<()> {
     let _path = PathBuf::from("../http_api_gateway");
     let _http_res = wash::cli::component_build::build_component(&path, &cli_context, &config).await;
 
-    // let aggregate_path = PathBuf::from("../target/wasm32-wasip2/release/aggregate.wasm");
+    // let command_handler_path = PathBuf::from("../target/wasm32-wasip2/release/command_handler.wasm");
     // let event_sourcer_path = PathBuf::from("../target/wasm32-wasip2/release/event_sourcer.wasm");
     // let filesystem_event_store_path =
     //     PathBuf::from("../target/wasm32-wasip2/release/filesystem_event_store.wasm");
@@ -36,13 +36,13 @@ async fn test_bank_account_basic() -> anyhow::Result<()> {
     // // Register the packages with the graph
     // let mut graph = CompositionGraph::new();
 
-    // let aggregate_pkg = Package::from_file(
-    //     "cosmonic:eventsourcing/aggregate",
+    // let command_handler_pkg = Package::from_file(
+    //     "cosmonic:eventsourcing/command-handler",
     //     None,
-    //     aggregate_path,
+    //     command_handler_path,
     //     graph.types_mut(),
     // )?;
-    // let package1 = graph.register_package(aggregate_pkg)?;
+    // let package1 = graph.register_package(command_handler_pkg)?;
 
     // let pkg = Package::from_file(
     //     "cosmonic:eventsourcing/event-sourcer",
@@ -90,9 +90,9 @@ async fn test_bank_account_basic() -> anyhow::Result<()> {
 
     // Define output paths with descriptive names
     let event_sourcer_plugged = "http_with_event_sourcer.wasm";
-    let aggregate_plugged = "http_with_event_sourcer_and_aggregate.wasm";
-    let fs_store_plugged = "http_with_event_sourcer_aggregate_and_fs_store.wasm";
-    let aggregate_final = "final_composed_bank_account.wasm";
+    let command_handler_plugged = "http_with_event_sourcer_and_command_handler.wasm";
+    let fs_store_plugged = "http_with_event_sourcer_command_handler_and_fs_store.wasm";
+    let command_handler_final = "final_composed_bank_account.wasm";
 
     // Plug event_sourcer into http_api_gateway
     let status = Command::new("wac")
@@ -105,43 +105,43 @@ async fn test_bank_account_basic() -> anyhow::Result<()> {
         .await?;
     assert!(status.success(), "wac plug event_sourcer failed");
 
-    // Plug bank_account_aggregate into http_with_event_sourcer.wasm
+    // Plug bank_account_command_handler into http_with_event_sourcer.wasm
     let status = Command::new("wac")
         .arg("plug")
         .arg("--plug")
-        .arg("../target/wasm32-wasip2/release/bank_account_aggregate.wasm")
+        .arg("../target/wasm32-wasip2/release/bank_account_command_handler.wasm")
         .arg(event_sourcer_plugged)
-        .stdout(std::fs::File::create(aggregate_plugged)?)
+        .stdout(std::fs::File::create(command_handler_plugged)?)
         .status()
         .await?;
     assert!(
         status.success(),
-        "wac plug bank_account_aggregate (1) failed"
+        "wac plug bank_account_command_handler (1) failed"
     );
 
-    // Plug filesystem_event_store into http_with_event_sourcer_and_aggregate.wasm
+    // Plug filesystem_event_store into http_with_event_sourcer_and_command_handler.wasm
     let status = Command::new("wac")
         .arg("plug")
         .arg("--plug")
         .arg("../target/wasm32-wasip2/release/filesystem_event_store.wasm")
-        .arg(aggregate_plugged)
+        .arg(command_handler_plugged)
         .stdout(std::fs::File::create(fs_store_plugged)?)
         .status()
         .await?;
     assert!(status.success(), "wac plug filesystem_event_store failed");
 
-    // Plug bank_account_aggregate into http_with_event_sourcer_aggregate_and_fs_store.wasm
+    // Plug bank_account_command_handler into http_with_event_sourcer_command_handler_and_fs_store.wasm
     let status = Command::new("wac")
         .arg("plug")
         .arg("--plug")
-        .arg("../target/wasm32-wasip2/release/bank_account_aggregate.wasm")
+        .arg("../target/wasm32-wasip2/release/bank_account_command_handler.wasm")
         .arg(fs_store_plugged)
-        .stdout(std::fs::File::create(aggregate_final)?)
+        .stdout(std::fs::File::create(command_handler_final)?)
         .status()
         .await?;
     assert!(
         status.success(),
-        "wac plug bank_account_aggregate (2) failed"
+        "wac plug bank_account_command_handler (2) failed"
     );
 
     tokio::fs::create_dir_all("bank_store/foobar").await?;

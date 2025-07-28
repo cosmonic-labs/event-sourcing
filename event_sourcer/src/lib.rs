@@ -15,12 +15,12 @@ use bindings::exports::cosmonic::eventsourcing::*;
 struct EventSourcer;
 
 impl event_sourcer::Guest for EventSourcer {
-    fn get_events(aggregate_id: String) -> Result<Vec<types::Event>, String> {
-        let bytes = event_store::get_events(&aggregate_id)?;
+    fn get_events(command_handler_id: String) -> Result<Vec<types::Event>, String> {
+        let bytes = event_store::get_events(&command_handler_id)?;
         let mut events = Vec::with_capacity(bytes.len());
         for event_bytes in bytes {
             events.push(
-                aggregate::deserialize_event(&event_bytes)
+                command_handler::deserialize_event(&event_bytes)
                     .map_err(|e| format!("failed to deserialize evente: {e}"))?,
             );
         }
@@ -28,13 +28,13 @@ impl event_sourcer::Guest for EventSourcer {
         Ok(events)
     }
 
-    fn append(aggregate_id: String, new_events: Vec<types::Event>) -> Result<Vec<Vec<u8>>, String> {
+    fn append(command_handler_id: String, new_events: Vec<types::Event>) -> Result<Vec<Vec<u8>>, String> {
         let mut all_events = Vec::with_capacity(new_events.len());
 
         for event in new_events {
-            let event_bytes = aggregate::serialize_event(event)
+            let event_bytes = command_handler::serialize_event(event)
                 .map_err(|e| format!("Failed to serialize event: {e}"))?;
-            event_store::append_event(&aggregate_id, &event_bytes)?;
+            event_store::append_event(&command_handler_id, &event_bytes)?;
             all_events.push(event_bytes);
         }
 
@@ -42,19 +42,19 @@ impl event_sourcer::Guest for EventSourcer {
     }
 
     fn handle_command(
-        aggregate_id: String,
+        command_handler_id: String,
         command: Vec<u8>,
     ) -> Result<Vec<event_sourcer::Event>, String> {
-        let events_bytes = event_store::get_events(&aggregate_id)?;
+        let events_bytes = event_store::get_events(&command_handler_id)?;
         let mut events = Vec::with_capacity(events_bytes.len());
 
         for event in events_bytes {
-            events.push(aggregate::deserialize_event(&event)?);
+            events.push(command_handler::deserialize_event(&event)?);
         }
-        let state = aggregate::rehydrate(events)?;
-        let command = aggregate::deserialize_command(&command)?;
+        let state = command_handler::rehydrate(events)?;
+        let command = command_handler::deserialize_command(&command)?;
 
-        let events = aggregate::handle(state, command)?;
+        let events = command_handler::handle(state, command)?;
 
         Ok(events)
     }
