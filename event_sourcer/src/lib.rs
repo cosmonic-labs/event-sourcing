@@ -20,7 +20,7 @@ impl event_sourcer::Guest for EventSourcer {
         let mut events = Vec::with_capacity(bytes.len());
         for event_bytes in bytes {
             events.push(
-                command_handler::deserialize_event(&event_bytes)
+                command_handler::Event::deserialize(&event_bytes)
                     .map_err(|e| format!("failed to deserialize evente: {e}"))?,
             );
         }
@@ -28,11 +28,14 @@ impl event_sourcer::Guest for EventSourcer {
         Ok(events)
     }
 
-    fn append(command_handler_id: String, new_events: Vec<types::Event>) -> Result<Vec<Vec<u8>>, String> {
+    fn append(
+        command_handler_id: String,
+        new_events: Vec<types::Event>,
+    ) -> Result<Vec<Vec<u8>>, String> {
         let mut all_events = Vec::with_capacity(new_events.len());
 
         for event in new_events {
-            let event_bytes = command_handler::serialize_event(event)
+            let event_bytes = command_handler::Event::serialize(&event)
                 .map_err(|e| format!("Failed to serialize event: {e}"))?;
             event_store::append_event(&command_handler_id, &event_bytes)?;
             all_events.push(event_bytes);
@@ -49,10 +52,10 @@ impl event_sourcer::Guest for EventSourcer {
         let mut events = Vec::with_capacity(events_bytes.len());
 
         for event in events_bytes {
-            events.push(command_handler::deserialize_event(&event)?);
+            events.push(command_handler::Event::deserialize(&event)?);
         }
         let state = command_handler::rehydrate(events)?;
-        let command = command_handler::deserialize_command(&command)?;
+        let command = command_handler::Command::deserialize(&command)?;
 
         let events = command_handler::handle(state, command)?;
 

@@ -4,29 +4,6 @@ package cosmonic:eventsourcing@0.0.1;
 interface command-handler {
     use types.{event, command, state};
 
-    /// Serialize, marshal, or encode a single event to its byte representation. This is the storage
-    /// format for the event. The same technique used to deserialize should be used to serialize.
-    serialize-event: func(event: event) -> result<list<u8>, string>;
-
-    /// Deserialize, unmarshal, or decode a single event from its byte representation. This is the storage
-    /// format for the event. The same technique used to deserialize should be used to serialize.
-    deserialize-event: func(event: list<u8>) -> result<event, string>;
-
-    /// Serialize, marshal, or encode a single command to its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    serialize-command: func(command: command) -> result<list<u8>, string>;
-
-    /// Deserialize, unmarshal, or decode a single command from its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    deserialize-command: func(event: list<u8>) -> result<command, string>;
-
-    /// Serialize, marshal, or encode the command-handler state to its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    serialize-state: func(state: state) -> result<list<u8>, string>;
-
-    /// Deserialize, unmarshal, or decode the command-handler state from its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    deserialize-state: func(state: list<u8>) -> result<state, string>;
 
     /// Rehydrate or reconstruct this command-handler's state from a list of events, starting from the initial state.
     rehydrate: func(events: list<event>) -> result<state, string>;
@@ -39,22 +16,6 @@ interface command-handler {
 interface event-handler {
     use types.{event, command};
 
-    /// Serialize, marshal, or encode a single event to its byte representation. This is the storage
-    /// format for the event. The same technique used to deserialize should be used to serialize.
-    serialize-event: func(event: event) -> result<list<u8>, string>;
-
-    /// Deserialize, unmarshal, or decode a single event from its byte representation. This is the storage
-    /// format for the event. The same technique used to deserialize should be used to serialize.
-    deserialize-event: func(event: list<u8>) -> result<event, string>;
-
-    /// Serialize, marshal, or encode a single command to its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    serialize-command: func(command: command) -> result<list<u8>, string>;
-
-    /// Deserialize, unmarshal, or decode a single command from its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    deserialize-command: func(event: list<u8>) -> result<command, string>;
-
     /// Handle the event and return new commands to be emitted
     handle: func(event: event) -> result<list<command>, string>;
 }
@@ -62,22 +23,6 @@ interface event-handler {
 /// Handle events, updating the state
 interface projector {
     use types.{event, state};
-
-    /// Serialize, marshal, or encode a single event to its byte representation. This is the storage
-    /// format for the event. The same technique used to deserialize should be used to serialize.
-    serialize-event: func(event: event) -> result<list<u8>, string>;
-
-    /// Deserialize, unmarshal, or decode a single event from its byte representation. This is the storage
-    /// format for the event. The same technique used to deserialize should be used to serialize.
-    deserialize-event: func(event: list<u8>) -> result<event, string>;
-
-    /// Serialize, marshal, or encode the command-handler state to its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    serialize-state: func(state: state) -> result<list<u8>, string>;
-
-    /// Deserialize, unmarshal, or decode the command-handler state from its byte representation.
-    /// The same technique used to deserialize should be used to serialize.
-    deserialize-state: func(state: list<u8>) -> result<state, string>;
 
     /// Using the given state, handle the event and return the new state.
     handle: func(state: state, event: event) -> result<state, string>;
@@ -105,11 +50,28 @@ interface event-store {
 /// 
 interface types {
     /// Represents an action or intent to change state, typically issued by a client.
-    resource command;
+    resource command {
+        /// Get the serialized representation
+        serialize: func() -> result<list<u8>, string>;
+        /// Deserialize from the serialized representation
+        deserialize: static func(event: list<u8>) -> result<command, string>;
+    }
+    
     /// Represents a state change that has occurred as a result of processing a command.
-    resource event;
+    resource event {
+        /// Get the serialized representation
+        serialize: func() -> result<list<u8>, string>;
+        /// Deserialize from the serialized representation
+        deserialize: static func(event: list<u8>) -> result<event, string>;
+    }
+
     /// Represents the current state of an entity, reconstructed from a sequence of events.
-    resource state;
+    resource state {
+        /// Get the serialized representation
+        serialize: func() -> result<list<u8>, string>;
+        /// Deserialize from the serialized representation
+        deserialize: static func(event: list<u8>) -> result<state, string>;
+    }
 }
 
 /// Business logic component
